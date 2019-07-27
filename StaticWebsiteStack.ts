@@ -6,7 +6,6 @@ import {
 } from '@aws-cdk/aws-cloudfront'
 import { Bucket } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import * as semver from 'semver';
 import * as iam from '@aws-cdk/aws-iam';
 
 
@@ -15,7 +14,7 @@ export class StaticWebsiteStack extends cdk.Stack {
     super(scope, id, undefined);
 
     const resourcePrefix = staticWebsiteConfig.resourcePrefix;
-    const deploymentVersion = semver.inc(staticWebsiteConfig.deploymentVersion, 'patch') || '1.0.0';
+    const deploymentVersion = staticWebsiteConfig.deploymentVersion;
     const originPath = deploymentVersion.replace(/\./g, '_');
 
     const sourceBucket = new Bucket(this, `S3BucketForWebsite`, {
@@ -59,7 +58,10 @@ export class StaticWebsiteStack extends cdk.Stack {
       cloudFrontDistProps = {
         originConfigs: [
           {
-            s3OriginSource: { s3BucketSource: sourceBucket },
+            s3OriginSource: {
+              s3BucketSource: sourceBucket,
+              originAccessIdentityId: cloudFrontOia.ref
+            },
             behaviors: [ {isDefaultBehavior: true}],
             originPath: `/${originPath}`,
           }
