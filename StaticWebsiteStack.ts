@@ -28,12 +28,10 @@ export class StaticWebsiteStack extends cdk.Stack {
       destinationKeyPrefix: originPath,
     });
 
+    const cloudFrontOia = new OriginAccessIdentity(this, 'OIA', {
+      comment: `${resourcePrefix}_oia`,
+    });
     // See AWS-CDK Issue: https://github.com/aws/aws-cdk/issues/941
-    const cloudFrontOia = OriginAccessIdentity.fromOriginAccessIdentityName(
-      this,
-      'OIA',
-      `${resourcePrefix}_oia`
-    );
 
     let cloudFrontDistProps: CloudFrontWebDistributionProps;
 
