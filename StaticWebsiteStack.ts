@@ -77,6 +77,8 @@ export class StaticWebsiteStack extends cdk.Stack {
     policyStatement.addResources(`${sourceBucket.bucketArn}/*`);
   
     cloudFrontOia.grantPrincipal.addToPolicy(policyStatement);
+    policyStatement.addPrincipals(cloudFrontOia.grantPrincipal);
+    
     //policyStatement.addCanonicalUserPrincipal(cloudFrontOia.grantPrincipal.addToPolicy());
 
     sourceBucket.addToResourcePolicy(policyStatement);
