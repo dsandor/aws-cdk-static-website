@@ -3,6 +3,7 @@ import {
   CloudFrontWebDistribution,
   CloudFrontWebDistributionProps,
   CfnCloudFrontOriginAccessIdentity,
+  OriginAccessIdentity,
 } from '@aws-cdk/aws-cloudfront'
 import { Bucket } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
@@ -23,7 +24,7 @@ export class StaticWebsiteStack extends cdk.Stack {
     });
 
     new BucketDeployment(this, 'DeployWebsite', {
-      source: Source.asset(staticWebsiteConfig.websiteDistPath),
+      sources: [Source.asset(staticWebsiteConfig.websiteDistPath)],
       destinationBucket: sourceBucket,
       destinationKeyPrefix: originPath,
     });
@@ -43,16 +44,20 @@ export class StaticWebsiteStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: sourceBucket,
-              originAccessIdentityId: cloudFrontOia.ref
+              originAccessIdentity: OriginAccessIdentity.fromOriginAccessIdentityName(
+                this,
+                'OIA',
+                `${resourcePrefix}_oia`
+              ),
             },
-            behaviors: [ {isDefaultBehavior: true}],
+            behaviors: [{ isDefaultBehavior: true }],
             originPath: `/${originPath}`,
-          }
+          },
         ],
         aliasConfiguration: {
           acmCertRef: staticWebsiteConfig.certificateArn,
-          names: staticWebsiteConfig.domainNames || []
-        }
+          names: staticWebsiteConfig.domainNames || [],
+        },
       };
     } else {
       cloudFrontDistProps = {
@@ -60,12 +65,16 @@ export class StaticWebsiteStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: sourceBucket,
-              originAccessIdentityId: cloudFrontOia.ref
+              originAccessIdentity: OriginAccessIdentity.fromOriginAccessIdentityName(
+                this,
+                'OIA',
+                `${resourcePrefix}_oia`
+              ),
             },
-            behaviors: [ {isDefaultBehavior: true}],
+            behaviors: [{ isDefaultBehavior: true }],
             originPath: `/${originPath}`,
-          }
-        ]
+          },
+        ],
       };
     }
 
