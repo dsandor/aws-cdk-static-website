@@ -2,7 +2,6 @@ import cdk = require('@aws-cdk/core');
 import {
   CloudFrontWebDistribution,
   CloudFrontWebDistributionProps,
-  CfnCloudFrontOriginAccessIdentity,
   OriginAccessIdentity,
 } from '@aws-cdk/aws-cloudfront'
 import { Bucket } from '@aws-cdk/aws-s3';
@@ -30,11 +29,11 @@ export class StaticWebsiteStack extends cdk.Stack {
     });
 
     // See AWS-CDK Issue: https://github.com/aws/aws-cdk/issues/941
-    const cloudFrontOia = new CfnCloudFrontOriginAccessIdentity(this, 'OIA', {
-      cloudFrontOriginAccessIdentityConfig: {
-        comment: `OIA for ${resourcePrefix} website.`
-      }
-    });
+    const cloudFrontOia = OriginAccessIdentity.fromOriginAccessIdentityName(
+      this,
+      'OIA',
+      `${resourcePrefix}_oia`
+    );
 
     let cloudFrontDistProps: CloudFrontWebDistributionProps;
 
@@ -44,11 +43,7 @@ export class StaticWebsiteStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: sourceBucket,
-              originAccessIdentity: OriginAccessIdentity.fromOriginAccessIdentityName(
-                this,
-                'OIA',
-                `${resourcePrefix}_oia`
-              ),
+              originAccessIdentity: cloudFrontOia,
             },
             behaviors: [{ isDefaultBehavior: true }],
             originPath: `/${originPath}`,
@@ -65,11 +60,7 @@ export class StaticWebsiteStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: sourceBucket,
-              originAccessIdentity: OriginAccessIdentity.fromOriginAccessIdentityName(
-                this,
-                'OIA',
-                `${resourcePrefix}_oia`
-              ),
+              originAccessIdentity: cloudFrontOia,
             },
             behaviors: [{ isDefaultBehavior: true }],
             originPath: `/${originPath}`,
@@ -86,7 +77,9 @@ export class StaticWebsiteStack extends cdk.Stack {
     policyStatement.addActions('s3:List*');
     policyStatement.addResources(sourceBucket.bucketArn);
     policyStatement.addResources(`${sourceBucket.bucketArn}/*`);
-    policyStatement.addCanonicalUserPrincipal(cloudFrontOia.attrS3CanonicalUserId);
+  
+    cloudFrontOia.grantPrincipal.addToPolicy(policyStatement);
+    //policyStatement.addCanonicalUserPrincipal(cloudFrontOia.grantPrincipal.addToPolicy());
 
     sourceBucket.addToResourcePolicy(policyStatement);
   }
