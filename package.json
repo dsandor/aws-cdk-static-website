@@ -1,6 +1,6 @@
 {
   "name": "aws-cdk-static-website",
-  "version": "1.0.22",
+  "version": "2.0.0",
   "description": "CDK Class used to simplify creating a static website deployment and all of its infrastructure.",
   "main": "index.js",
   "license": "MIT",
@@ -27,6 +27,5 @@
   "scripts": {
     "build": "tsc"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
